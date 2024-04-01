@@ -65,6 +65,17 @@ template_letter = File.read('form_letter.erb')
 erb_template = ERB.new template_letter
 
 hours = []
+days = []
+
+WEEKDAYS = {
+  0 => 'Sunday',
+  1 => 'Monday',
+  2 => 'Tuesday',
+  3 => 'Wednesday',
+  4 => 'Thursday',
+  5 => 'Friday',
+  6 => 'Saturday'
+}.freeze
 
 contents.each do |row|
   id = row[0]
@@ -75,6 +86,7 @@ contents.each do |row|
   registration_date = Time.strptime((row[:regdate]), '%m/%d/%y %H:%M')
 
   hours << registration_date.hour
+  days << registration_date.wday
 
   puts "#{name} #{phone}"
 
@@ -86,3 +98,4 @@ contents.each do |row|
 end
 
 puts "Most popular registration hour: #{get_max_frequency(hours)}"
+puts "Most popular registration day: #{WEEKDAYS[get_max_frequency(days)]}"
