@@ -3,6 +3,7 @@
 require 'csv'
 require 'google/apis/civicinfo_v2'
 require 'erb'
+require 'time'
 
 def clean_zipcode(zipcode)
   zipcode.to_s.rjust(5, '0')[0..4]
@@ -18,6 +19,10 @@ def clean_phone_number(phone_number)
   else
     'bad input'
   end
+end
+
+def get_max_frequency(values)
+  values.max_by { |v| values.count(v) }
 end
 
 def build_civic_info
@@ -59,15 +64,25 @@ contents = CSV.open(
 template_letter = File.read('form_letter.erb')
 erb_template = ERB.new template_letter
 
+hours = []
+
 contents.each do |row|
   id = row[0]
   name = row[:first_name]
   zipcode = clean_zipcode(row[:zipcode])
   phone = clean_phone_number(row[:homephone])
+
+  registration_date = Time.strptime((row[:regdate]), '%m/%d/%y %H:%M')
+
+  hours << registration_date.hour
+
   puts "#{name} #{phone}"
+
   legislators = legislators_by_zipcode(zipcode)
 
   form_letter = erb_template.result(binding)
 
   save_thank_you_letter(id, form_letter)
 end
+
+puts "Most popular registration hour: #{get_max_frequency(hours)}"
